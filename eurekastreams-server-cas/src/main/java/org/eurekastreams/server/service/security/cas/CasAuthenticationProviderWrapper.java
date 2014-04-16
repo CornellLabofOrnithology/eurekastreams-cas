@@ -70,6 +70,8 @@ public class CasAuthenticationProviderWrapper extends CasAuthenticationProvider 
 	/**
 	 * This is the way we're extending the login process, if the cas account isnt found, we make it
 	 * 
+	 * Note: see UserDetailsServiceImpl#loadUserByUsername for the basics of what we're trying to copy here
+	 * 
 	 * TODO should write tests for any of these custom classes in server-cas extensions project
 	 */
 	@SuppressWarnings("unchecked")
@@ -93,15 +95,16 @@ public class CasAuthenticationProviderWrapper extends CasAuthenticationProvider 
 		Person person = personMapper.findByAccountId(username);
 		
 		/**
-		 * es is setup to try and create uses from ldap, but we need to create a user from the cas assertion response
+		 * es is setup to try and create users from ldap, but we need to create a user from the cas assertion response
 		 */
 		if(person == null){
 			log.info("The person wasn't found in db, so lets execute custom create user from cas action");
 			
 			//add person to db
 			 person = (Person) serviceActionController.execute(new ServiceActionContext((Serializable) casAssertions, null),
-                     createUserfromCasAction);
+                     												createUserfromCasAction);
 			 
+			 //all es accountids are lowercase, who knows what cas is going to through at us, so always go to lowercase
 			 log.info("update person with our own custom person mapper that can update the cas_user_id from the user_id in the cas response");
 			 casPersonMapper.updateUserId(username, (String)assertion.getPrincipal().getAttributes().get("user_id"));
 		}
