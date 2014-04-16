@@ -19,12 +19,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eurekastreams.commons.hibernate.QueryOptimizer;
 import org.eurekastreams.server.domain.CasPerson;
+import javax.persistence.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * This class provides the mapper functionality for Person entities.
  */
-@Deprecated
 public class CasPersonMapperImpl extends DomainEntityMapper<CasPerson> implements CasPersonMapper
 {
     /**
@@ -68,37 +68,33 @@ public class CasPersonMapperImpl extends DomainEntityMapper<CasPerson> implement
     @Transactional
     public void updateUserId(final String accountId, final String userId)
     {
-    	//TODO check for this userid already
+    	//protect ourselves from ever changing input
+    	String lowerCaseAccountId = accountId.toLowerCase();
+    	
+    	//for testing only check for this userid existing
         /*Query q = getEntityManager().createQuery(
-                "FROM Follower where followerId=:followerId and followingId=:followingId").setParameter("followerId",
-                followerId).setParameter("followingId", followingId);
+                "FROM Person where accountId=:accountId").setParameter("accountId",lowerCaseAccountId);
 
-        if (q.getResultList().size() > 0)
-        {
-            // already following
-            return;
+        if (q.getResultList().size() > 0) {
+            logger.info("found user record to update with userid");
+        } else {
+        	logger.info("did not find user record to update with userid");
         }*/
 
-        // add follower
-        //getEntityManager().persist(new Follower(followerId, followingId));
-
+    	// TODO dont understand comments below...
         // now update the counts for persons subtracting 1 for themselves.
-        getEntityManager().createQuery(
+    	// version update just makes sure to update the person version column, since we're updating that record, standard hql
+        int result = getEntityManager().createQuery(
                 "update versioned CasPerson set userId = :userId where accountId = :accountId").setParameter(
-                "userId", userId).setParameter("accountId", accountId).executeUpdate();
+                "userId", userId).setParameter("accountId", lowerCaseAccountId).executeUpdate();
 
+        if(result < 1){
+        	logger.error("Eurekastreams server cas person mapper failed to update a person record with the cas user id. This is a critical error!!");
+        }
        
         getEntityManager().flush();
         getEntityManager().clear();
 
-        // reindex the following in the search index
-
-        // Note: Finding the entity by id is massively faster than doing a refresh on
-        // the entity. This way the recently fetched entity will have the updated counts
-        // to send to index.
-        //Person followingEntity = findById(followingId);
-
-        //getFullTextSession().index(followingEntity);
     }
 
   
