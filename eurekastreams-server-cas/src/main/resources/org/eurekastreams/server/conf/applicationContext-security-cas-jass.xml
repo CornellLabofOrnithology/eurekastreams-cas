@@ -43,7 +43,10 @@
         <intercept-url pattern="/rpc" access="ROLE_ANONYMOUS, ROLE_USER"/>
         <intercept-url pattern="/rpc/**" access="ROLE_ANONYMOUS, ROLE_USER"/>
         <intercept-url pattern="/eurekastreams/photos/**" access="ROLE_ANONYMOUS, ROLE_USER"/>
+        <!-- @author yardmap-cm325 added role_anonymous because oauth wouldnt work, need to address this, locked down in apache for now -->
 	    <intercept-url pattern="/api/0/**" access="ROLE_OAUTH_CLIENT, ROLE_USER, ROLE_ANONYMOUS"/>
+	    <!-- in the ym overlay we've added a ymstatic folder, we need to allow anonymous access here, since that overlay doesnt add any additional security filters  -->
+	    <intercept-url pattern="/ymstatic/**" access="ROLE_ANONYMOUS, ROLE_USER"/>
         <intercept-url pattern="/**" access="ROLE_USER"/>       
         <anonymous />
         <!-- key MUST match key in persistentLoginService -->        
