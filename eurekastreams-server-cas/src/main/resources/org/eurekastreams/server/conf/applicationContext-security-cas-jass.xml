@@ -115,7 +115,7 @@
       </beans:bean>-->
       <beans:bean class="org.jasig.cas.client.validation.Saml11TicketValidator">
         <beans:constructor-arg index="0" value="${eureka.server.security.casUrl}" />
-        <beans:property name="tolerance" value="100000" />
+        <beans:property name="tolerance" value="100000" /><!-- this was set at 100000, and was changed to 600000 to fix a problem that turned out not to be cas.  -->
       </beans:bean>
     </beans:property> 
     <beans:property name="key" value="an_id_for_this_auth_provider_only"/>
